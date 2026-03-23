@@ -28,7 +28,7 @@ export async function POST(req) {
 
     // STEP 2 — Scrape with ScrapingDog (general scraper → extract og:description)
     const scrapeRes = await fetch(
-      `https://api.scrapingdog.com/scrape?api_key=${process.env.SCRAPINGDOG_API_KEY}&url=${encodeURIComponent(url)}&dynamic=false`
+      `https://api.scrapingdog.com/scrape?api_key=${process.env.SCRAPINGDOG_API_KEY}&url=${encodeURIComponent(url)}&dynamic=true`
     );
 
     if (!scrapeRes.ok) {
@@ -76,8 +76,11 @@ export async function POST(req) {
     const comments = commentsMatch ? parseInt(commentsMatch[1].replace(/,/g, "")) : 0;
 
     if (!caption) {
+      // Return a debug snippet so we can see what Instagram served
+      const debugHtml = html.slice(0, 2000);
       return new Response(JSON.stringify({
         error: "Could not extract caption. Make sure the post is public and the URL is a direct Instagram post link (/p/, /reel/).",
+        debug_html_preview: debugHtml,
       }), {
         status: 400,
         headers: { "Content-Type": "application/json" },
