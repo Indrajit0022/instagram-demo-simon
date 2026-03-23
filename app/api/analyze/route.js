@@ -26,15 +26,15 @@ export async function POST(req) {
       });
     }
 
-    // STEP 2 — Scrape with Apify Instagram Post Scraper
-    // Start a run of the Instagram Post Scraper actor
+    // STEP 2 — Scrape with Apify Instagram Scraper
     const runRes = await fetch(
-      `https://api.apify.com/v2/acts/apify~instagram-post-scraper/run-sync-get-dataset-items?token=${process.env.APIFY_API_KEY}&timeout=50&memory=256`,
+      `https://api.apify.com/v2/acts/apify~instagram-scraper/run-sync-get-dataset-items?token=${process.env.APIFY_API_KEY}&timeout=50&memory=256`,
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           directUrls: [url],
+          resultsType: "posts",
           resultsLimit: 1,
         }),
       }
