@@ -26,39 +26,59 @@ export async function POST(req) {
       });
     }
 
-    // STEP 2 — Scrape with ScrapingDog
-    // Extract ID from Instagram URL (shortcode)
-    // Works for /p/, /reels/, /tv/
-    const idMatch = url.match(/(?:\/p\/|\/reels\/|\/tv\/)([^\/?#&]+)/);
-    const postId = idMatch ? idMatch[1] : url;
-
+    // STEP 2 — Scrape with ScrapingDog (general scraper → extract og:description)
     const scrapeRes = await fetch(
-      `https://api.scrapingdog.com/profile/post?api_key=${process.env.SCRAPINGDOG_API_KEY}&id=${postId}`
+      `https://api.scrapingdog.com/scrape?api_key=${process.env.SCRAPINGDOG_API_KEY}&url=${encodeURIComponent(url)}&dynamic=false`
     );
-    const scrapeData = await scrapeRes.json();
 
-    // Log for debugging
-    console.log("Scrape Data:", JSON.stringify(scrapeData).slice(0, 500));
+    if (!scrapeRes.ok) {
+      throw new Error(`ScrapingDog request failed with status: ${scrapeRes.status}`);
+    }
 
-    // Handle the new response structure
-    const postData = Array.isArray(scrapeData) ? scrapeData[0] : scrapeData;
-    
-    // Attempt multiple paths for the caption
-    const caption = postData?.edge_media_to_caption?.edges[0]?.node?.text || 
-                    postData?.caption?.text || 
-                    postData?.caption || 
-                    postData?.text ||
-                    postData?.accessibility_caption || 
-                    "";
-    
-    const likes = postData?.edge_media_preview_like?.count || postData?.like_count || postData?.likes || 0;
-    const comments = postData?.edge_media_to_parent_comment?.count || postData?.comment_count || postData?.comments || 0;
+    const html = await scrapeRes.text();
+    console.log("HTML length:", html.length, "| Preview:", html.slice(0, 300));
+
+    // Instagram embeds the caption in og:description
+    const ogDescMatch =
+      html.match(/<meta[^>]+property=["']og:description["'][^>]+content=["']([^"']+)["']/i) ||
+      html.match(/<meta[^>]+content=["']([^"']+)["'][^>]+property=["']og:description["']/i);
+
+    let caption = "";
+    if (ogDescMatch && ogDescMatch[1]) {
+      const raw = ogDescMatch[1]
+        .replace(/&#039;/g, "'")
+        .replace(/&quot;/g, '"')
+        .replace(/&amp;/g, "&")
+        .replace(/&lt;/g, "<")
+        .replace(/&gt;/g, ">");
+
+      // og:description format: "N likes, N comments - Username: Caption here"
+      const colonMatch = raw.match(/:\s*[""]?(.+)/s);
+      caption = colonMatch ? colonMatch[1].replace(/[""]$/, "").trim() : raw.trim();
+    }
+
+    // Fallback: try JSON-LD
+    if (!caption) {
+      const jsonLdMatch = html.match(/<script[^>]+type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/i);
+      if (jsonLdMatch) {
+        try {
+          const jsonLd = JSON.parse(jsonLdMatch[1]);
+          caption = jsonLd?.description || jsonLd?.caption || "";
+        } catch {}
+      }
+    }
+
+    // Extract likes/comments counts from the og:description text
+    const rawDesc = ogDescMatch?.[1] || "";
+    const likesMatch = rawDesc.match(/(\d[\d,]*)\s*likes?/i);
+    const commentsMatch = rawDesc.match(/(\d[\d,]*)\s*comments?/i);
+    const likes = likesMatch ? parseInt(likesMatch[1].replace(/,/g, "")) : 0;
+    const comments = commentsMatch ? parseInt(commentsMatch[1].replace(/,/g, "")) : 0;
 
     if (!caption) {
-      const apiError = scrapeData?.error || scrapeData?.message || "";
-      const errorMsg = apiError ? `API Error: ${apiError}` : "Could not extract caption. Make sure the post is public and the ID is correct.";
-      
-      return new Response(JSON.stringify({ error: errorMsg }), {
+      return new Response(JSON.stringify({
+        error: "Could not extract caption. Make sure the post is public and the URL is a direct Instagram post link (/p/, /reel/).",
+      }), {
         status: 400,
         headers: { "Content-Type": "application/json" },
       });
