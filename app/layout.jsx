@@ -1,5 +1,5 @@
 import { Instrument_Serif, DM_Sans } from 'next/font/google';
-import "./globals.css";
+import './globals.css';
 
 const instrumentSerif = Instrument_Serif({
   subsets: ['latin'],

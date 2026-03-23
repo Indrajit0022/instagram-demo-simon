@@ -2,6 +2,258 @@
 
 import { useState, useEffect, useRef } from "react";
 
+const styles = {
+  header: {
+    position: "sticky",
+    top: 0,
+    zIndex: 50,
+    height: "52px",
+    borderBottom: "1px solid #1C1C1C",
+    backgroundColor: "rgba(8, 8, 8, 0.9)",
+    backdropFilter: "blur(8px)",
+    WebkitBackdropFilter: "blur(8px)",
+    padding: "0 24px",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
+  logoBox: {
+    width: "24px",
+    height: "24px",
+    backgroundColor: "#1C1C1C",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    color: "#FFFFFF",
+    fontSize: "10px",
+    fontWeight: "bold",
+  },
+  headerText: {
+    fontFamily: "var(--font-instrument)",
+    color: "#FFFFFF",
+    fontSize: "14px",
+  },
+  statusDot: {
+    width: "8px",
+    height: "8px",
+    borderRadius: "50%",
+    backgroundColor: "#444444",
+  },
+  statusText: {
+    color: "#444444",
+    fontSize: "12px",
+    display: "flex",
+    alignItems: "center",
+    gap: "8px",
+  },
+  container: {
+    maxWidth: "800px",
+    margin: "0 auto",
+    padding: "0 24px",
+  },
+  hero: {
+    paddingTop: "80px",
+    paddingBottom: "60px",
+    textAlign: "center",
+  },
+  pill: {
+    display: "inline-block",
+    padding: "4px 12px",
+    backgroundColor: "#1C1C1C",
+    border: "1px solid #2A2A2A",
+    borderRadius: "99px",
+    color: "#FFFFFF",
+    fontSize: "11px",
+    marginBottom: "24px",
+  },
+  h1: {
+    fontFamily: "var(--font-instrument)",
+    color: "#FFFFFF",
+    fontSize: "clamp(2.5rem, 5vw, 4rem)",
+    letterSpacing: "-0.03em",
+    lineHeight: "1.1",
+    marginBottom: "16px",
+  },
+  subtext: {
+    color: "#888888",
+    fontSize: "16px",
+    maxWidth: "460px",
+    margin: "0 auto",
+    lineHeight: "1.5",
+  },
+  form: {
+    marginBottom: "32px",
+    width: "100%",
+    backgroundColor: "#111111",
+    border: "1px solid #1C1C1C",
+    borderRadius: "12px",
+    padding: "6px 6px 6px 20px",
+    display: "flex",
+    alignItems: "center",
+    gap: "8px",
+  },
+  input: {
+    flex: 1,
+    background: "transparent",
+    border: "none",
+    outline: "none",
+    color: "#FFFFFF",
+    fontSize: "14px",
+    fontFamily: "var(--font-dm)",
+  },
+  analyseBtn: {
+    backgroundColor: "#FFFFFF",
+    color: "#080808",
+    fontFamily: "var(--font-dm)",
+    fontSize: "13px",
+    fontWeight: "600",
+    borderRadius: "8px",
+    padding: "11px 22px",
+    border: "none",
+    cursor: "pointer",
+    transition: "background-color 0.2s",
+  },
+  disabledBtn: {
+    backgroundColor: "#1C1C1C",
+    color: "#444444",
+    cursor: "not-allowed",
+  },
+  loadingContainer: {
+    textAlign: "center",
+    padding: "80px 0",
+  },
+  spinner: {
+    width: "32px",
+    height: "32px",
+    border: "1.5px solid #2A2A2A",
+    borderTop: "1.5px solid #FFFFFF",
+    borderRadius: "50%",
+    margin: "0 auto 16px",
+    animation: "spin 1s linear infinite",
+  },
+  loadingText: {
+    color: "#888888",
+    fontSize: "14px",
+    marginBottom: "8px",
+  },
+  loadingNote: {
+    color: "#444444",
+    fontSize: "12px",
+  },
+  error: {
+    backgroundColor: "#0F0000",
+    border: "1px solid #2D0000",
+    borderRadius: "12px",
+    padding: "14px 18px",
+    color: "#FF6666",
+    fontSize: "14px",
+    marginBottom: "20px",
+  },
+  resultsGrid: {
+    display: "grid",
+    gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))",
+    gap: "16px",
+  },
+  label: {
+    color: "#444444",
+    fontSize: "10px",
+    textTransform: "uppercase",
+    letterSpacing: "0.2em",
+    marginBottom: "12px",
+  },
+  card: {
+    backgroundColor: "#111111",
+    border: "1px solid #1C1C1C",
+    borderRadius: "12px",
+    padding: "14px 16px",
+    marginBottom: "10px",
+  },
+  cardLabel: {
+    color: "#444444",
+    fontSize: "10px",
+    textTransform: "uppercase",
+    letterSpacing: "0.1em",
+    marginBottom: "6px",
+    display: "block",
+  },
+  hookText: {
+    color: "#AAAAAA",
+    fontStyle: "italic",
+    fontSize: "15px",
+    lineHeight: "1.4",
+  },
+  whiteText: {
+    color: "#FFFFFF",
+    fontSize: "14px",
+  },
+  smallWhiteText: {
+    color: "#FFFFFF",
+    fontSize: "13px",
+  },
+  whyItWorks: {
+    backgroundColor: "#111111",
+    border: "1px solid #1C1C1C",
+    borderLeft: "2px solid #FFFFFF",
+    borderRadius: "12px",
+    padding: "14px 16px",
+    color: "#888888",
+    fontSize: "13px",
+  },
+  newHook: {
+    fontFamily: "var(--font-instrument)",
+    color: "#FFFFFF",
+    fontSize: "17px",
+    fontWeight: "600",
+    letterSpacing: "-0.01em",
+  },
+  preWrap: {
+    color: "#FFFFFF",
+    fontSize: "14px",
+    lineHeight: "1.75",
+    whiteSpace: "pre-wrap",
+  },
+  divider: {
+    height: "1px",
+    backgroundColor: "#1C1C1C",
+    margin: "14px 0",
+  },
+  secondaryTextSmall: {
+    color: "#888888",
+    fontSize: "13px",
+  },
+  hashtagChip: {
+    backgroundColor: "#1C1C1C",
+    border: "1px solid #2A2A2A",
+    color: "#888888",
+    fontSize: "11px",
+    padding: "3px 8px",
+    borderRadius: "6px",
+  },
+  copyBtn: {
+    width: "100%",
+    backgroundColor: "#FFFFFF",
+    color: "#080808",
+    fontSize: "13px",
+    fontWeight: "700",
+    borderRadius: "8px",
+    padding: "13px",
+    marginTop: "12px",
+    border: "none",
+    cursor: "pointer",
+  },
+  resetBtn: {
+    width: "100%",
+    backgroundColor: "transparent",
+    color: "#444444",
+    border: "1px solid #1C1C1C",
+    borderRadius: "8px",
+    padding: "10px",
+    marginTop: "8px",
+    fontSize: "12px",
+    cursor: "pointer",
+  }
+};
+
 export default function Home() {
   const [url, setUrl] = useState("");
   const [loading, setLoading] = useState(false);
@@ -45,11 +297,7 @@ export default function Home() {
       });
 
       const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || "Something went wrong");
-      }
-
+      if (!response.ok) throw new Error(data.error || "Something went wrong");
       setResult(data);
     } catch (err) {
       setError(err.message);
@@ -74,211 +322,152 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen pb-20 selection:bg-white selection:text-black">
-      {/* 1. HEADER */}
-      <header className="sticky top-0 z-50 h-[52px] border-b border-[#1C1C1C] bg-[#080808]/90 backdrop-blur px-6 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="w-6 h-6 bg-[#1C1C1C] flex items-center justify-center text-white text-[10px] font-bold">
-            CI
-          </div>
-          <span className="instrument-serif text-white text-[14px]">
-            Content Intelligence
-          </span>
+    <div style={{ minHeight: "100vh", backgroundColor: "#080808" }}>
+      {/* HEADER */}
+      <header style={styles.header}>
+        <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+          <div style={styles.logoBox}>CI</div>
+          <span style={styles.headerText}>Content Intelligence</span>
         </div>
-        <div className="flex items-center gap-2 text-[#444444] text-[12px]">
-          <span className="w-2 h-2 rounded-full bg-[#444444]" />
+        <div style={styles.statusText}>
+          <span style={styles.statusDot} />
           Gemini Flash 1.5
         </div>
       </header>
 
-      <main className="max-w-[800px] mx-auto px-6">
-        {/* 2. HERO */}
+      <main style={styles.container}>
+        {/* HERO */}
         {!result && !loading && (
-          <section className="pt-20 pb-[60px] text-center">
-            <div className="inline-block px-3 py-1 bg-[#1C1C1C] border border-[#2A2A2A] rounded-full text-white text-[11px] mb-6">
-              AI-Powered
-            </div>
-            <h1 className="instrument-serif text-white leading-tight mb-4 tracking-[-0.03em]" style={{ fontSize: 'clamp(2.5rem, 5vw, 4rem)' }}>
+          <section style={styles.hero}>
+            <div style={styles.pill}>AI-Powered</div>
+            <h1 style={styles.h1}>
               Drop a post.<br />
-              <span className="text-[#888888]">Get a better one.</span>
+              <span style={{ color: "#888888" }}>Get a better one.</span>
             </h1>
-            <p className="text-[#888888] text-[16px] max-w-[460px] mx-auto">
+            <p style={styles.subtext}>
               Paste any public Instagram URL. We analyse what makes it work and write you a brand new version instantly.
             </p>
           </section>
         )}
 
-        {/* 3. INPUT */}
-        <div className={`transition-all duration-500 ${result || loading ? 'pt-12' : 'pt-0'}`}>
-          <form 
-            onSubmit={handleSubmit}
-            className="mb-8 w-full bg-[#111111] border border-[#1C1C1C] rounded-[12px] p-1.5 pl-5 flex items-center gap-2 group focus-within:border-[#2A2A2A]"
-          >
-            <span className="text-[#444444] text-[14px]">🔗</span>
+        {/* INPUT */}
+        <div style={{ paddingTop: result || loading ? "48px" : "0", transition: "padding 0.5s ease" }}>
+          <form onSubmit={handleSubmit} style={styles.form}>
+            <span style={{ color: "#444444" }}>🔗</span>
             <input
               ref={inputRef}
               type="text"
               value={url}
               onChange={(e) => setUrl(e.target.value)}
               placeholder="https://www.instagram.com/p/..."
-              className="flex-1 bg-transparent border-none outline-none text-white text-[14px] placeholder:text-[#444444]"
+              style={styles.input}
             />
             <button
               type="submit"
               disabled={loading || !url}
-              className={`px-[22px] py-[11px] rounded-[8px] text-[13px] font-semibold transition-all ${
-                loading || !url 
-                  ? "bg-[#1C1C1C] text-[#444444]" 
-                  : "bg-white text-[#080808] hover:bg-[#EAEAEA]"
-              }`}
+              style={{
+                ...styles.analyseBtn,
+                ...(loading || !url ? styles.disabledBtn : {})
+              }}
             >
-              Analyze →
+              Analyse →
             </button>
           </form>
         </div>
 
-        {/* 4. LOADING */}
+        {/* LOADING */}
         {loading && (
-          <div className="py-20 flex flex-col items-center justify-center">
-            <div className="relative w-8 h-8 rounded-full border-[1.5px] border-[#2A2A2A] border-t-white animate-spin" />
-            <div className="mt-4 text-[#888888] text-[14px]">
-              {steps[loadingStep].text}
-            </div>
-            <div className="mt-2 text-[#444444] text-[12px]">
-              Usually takes 10–20 seconds
-            </div>
+          <div style={styles.loadingContainer}>
+            <div style={styles.spinner} />
+            <div style={styles.loadingText}>{steps[loadingStep].text}</div>
+            <div style={styles.loadingNote}>Usually takes 10–20 seconds</div>
           </div>
         )}
 
-        {/* 5. ERROR */}
+        {/* ERROR */}
         {error && (
-          <div className="mb-5 bg-[#0F0000] border border-[#2D0000] rounded-[12px] p-[14px_18px] text-[#FF6666] text-[14px]">
-            Error: {error}
-          </div>
+          <div style={styles.error}>Error: {error}</div>
         )}
 
-        {/* 6. RESULTS */}
+        {/* RESULTS */}
         {result && !loading && (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div style={styles.resultsGrid}>
             {/* LEFT COLUMN */}
-            <div className="flex flex-col gap-4 animate-fade-up opacity-0 stagger-1">
-              <label className="text-[#444444] text-[10px] uppercase tracking-[0.2em] mb-[-4px]">
-                ORIGINAL — DECODED
-              </label>
+            <div className="fade-up">
+              <div style={styles.label}>ORIGINAL — DECODED</div>
               
-              <div className="bg-[#111111] border border-[#1C1C1C] rounded-[12px] p-[14px_16px]">
-                <label className="text-[#444444] text-[10px] uppercase tracking-wide block mb-1.5">
-                  HOOK IDENTIFIED
-                </label>
-                <p className="text-[#AAAAAA] italic text-[15px] leading-[1.4]">
-                  "{result.analysis.hook}"
-                </p>
+              <div style={styles.card}>
+                <span style={styles.cardLabel}>HOOK IDENTIFIED</span>
+                <p style={styles.hookText}>"{result.analysis.hook}"</p>
               </div>
 
-              <div className="bg-[#111111] border border-[#1C1C1C] rounded-[12px] p-[14px_16px]">
-                <label className="text-[#444444] text-[10px] uppercase tracking-wide block mb-1.5">
-                  CORE MESSAGE
-                </label>
-                <p className="text-white text-[14px]">
-                  {result.analysis.mainIdea}
-                </p>
+              <div style={styles.card}>
+                <span style={styles.cardLabel}>CORE MESSAGE</span>
+                <p style={styles.whiteText}>{result.analysis.mainIdea}</p>
               </div>
 
-              <div className="grid grid-cols-2 gap-[10px]">
-                <div className="bg-[#111111] border border-[#1C1C1C] rounded-[12px] p-[14px_16px]">
-                  <label className="text-[#444444] text-[10px] uppercase tracking-wide block mb-1.5">
-                    STRUCTURE
-                  </label>
-                  <p className="text-white text-[13px]">
-                    {result.analysis.structure}
-                  </p>
+              <div style={{ display: "flex", gap: "10px", marginBottom: "10px" }}>
+                <div style={{ ...styles.card, flex: 1, marginBottom: 0 }}>
+                  <span style={styles.cardLabel}>STRUCTURE</span>
+                  <p style={styles.smallWhiteText}>{result.analysis.structure}</p>
                 </div>
-                <div className="bg-[#111111] border border-[#1C1C1C] rounded-[12px] p-[14px_16px]">
-                  <label className="text-[#444444] text-[10px] uppercase tracking-wide block mb-1.5">
-                    TONE
-                  </label>
-                  <p className="text-white text-[13px]">
-                    {result.analysis.tone}
-                  </p>
+                <div style={{ ...styles.card, flex: 1, marginBottom: 0 }}>
+                  <span style={styles.cardLabel}>TONE</span>
+                  <p style={styles.smallWhiteText}>{result.analysis.tone}</p>
                 </div>
               </div>
 
-              <div className="bg-[#111111] border border-[#1C1C1C] border-l-white border-l-2 rounded-[12px] p-[14px_16px]">
-                <label className="text-[#444444] text-[10px] uppercase tracking-wide block mb-1.5">
-                  WHY IT WORKS
-                </label>
-                <p className="text-[#888888] text-[13px]">
-                  {result.analysis.whatWorksWell}
-                </p>
+              <div style={styles.whyItWorks}>
+                <span style={styles.cardLabel}>WHY IT WORKS</span>
+                <p>{result.analysis.whatWorksWell}</p>
               </div>
             </div>
 
             {/* RIGHT COLUMN */}
-            <div className="flex flex-col gap-4 animate-fade-up opacity-0 stagger-3">
-              <label className="text-[#444444] text-[10px] uppercase tracking-[0.2em] mb-[-4px]">
-                YOUR NEW VERSION
-              </label>
+            <div className="fade-up-1">
+              <div style={styles.label}>YOUR NEW VERSION</div>
 
-              <div className="bg-[#111111] border border-[#1C1C1C] rounded-[12px] p-[14px_16px]">
-                <label className="text-[#444444] text-[10px] uppercase tracking-wide block mb-1.5">
-                  NEW HOOK
-                </label>
-                <p className="instrument-serif text-white text-[17px] font-semibold tracking-[-0.01em]">
-                  {result.rewrite.hook}
-                </p>
+              <div style={styles.card}>
+                <span style={styles.cardLabel}>NEW HOOK</span>
+                <p style={styles.newHook}>{result.rewrite.hook}</p>
               </div>
 
-              <div className="flex-1 bg-[#111111] border border-[#1C1C1C] rounded-[12px] p-[14px_16px] flex flex-col">
-                <label className="text-[#444444] text-[10px] uppercase tracking-wide block mb-1.5">
-                  FULL CAPTION
-                </label>
-                <p className="text-white text-[14px] leading-[1.75] whitespace-pre-wrap">
-                  {result.rewrite.caption}
-                </p>
+              <div style={styles.card}>
+                <span style={styles.cardLabel}>FULL CAPTION</span>
+                <p style={styles.preWrap}>{result.rewrite.caption}</p>
                 
-                <div className="h-px bg-[#1C1C1C] my-[14px]" />
+                <div style={styles.divider} />
                 
-                <label className="text-[#444444] text-[10px] uppercase tracking-wide block mb-1.5">
-                  CALL TO ACTION
-                </label>
-                <p className="text-[#888888] text-[13px]">
-                  {result.rewrite.cta}
-                </p>
+                <span style={styles.cardLabel}>CALL TO ACTION</span>
+                <p style={styles.secondaryTextSmall}>{result.rewrite.cta}</p>
 
-                <div className="h-px bg-[#1C1C1C] my-[14px]" />
+                <div style={styles.divider} />
 
-                <label className="text-[#444444] text-[10px] uppercase tracking-wide block mb-1.5">
-                  HASHTAGS (20)
-                </label>
-                <div className="flex flex-wrap gap-[5px]">
+                <span style={styles.cardLabel}>HASHTAGS (20)</span>
+                <div style={{ display: "flex", flexWrap: "wrap", gap: "5px", marginTop: "4px" }}>
                   {result.rewrite.hashtags.map((tag, i) => (
-                    <span 
-                      key={i}
-                      className="bg-[#1C1C1C] border border-[#2A2A2A] text-[#888888] text-[11px] px-2 py-0.5 rounded-[6px]"
-                    >
-                      {tag}
-                    </span>
+                    <span key={i} style={styles.hashtagChip}>{tag}</span>
                   ))}
                 </div>
               </div>
 
-              <button
-                onClick={copyToClipboard}
-                className="w-full bg-white text-[#080808] text-[13px] font-bold py-[13px] rounded-[8px] transition-all hover:bg-[#EAEAEA]"
-              >
+              <button onClick={copyToClipboard} style={styles.copyBtn}>
                 {copied ? "✓ Copied" : "Copy full caption"}
               </button>
 
-              <button
-                onClick={handleReset}
-                className="w-full bg-transparent border border-[#1C1C1C] text-[#444444] text-[12px] py-[10px] rounded-[8px] transition-all hover:border-[#2A2A2A] hover:text-[#888888]"
-              >
+              <button onClick={handleReset} style={styles.resetBtn}>
                 Analyse another post
               </button>
             </div>
           </div>
         )}
       </main>
+
+      <style jsx global>{`
+        @keyframes spin {
+          to { transform: rotate(360deg); }
+        }
+      `}</style>
     </div>
   );
 }
