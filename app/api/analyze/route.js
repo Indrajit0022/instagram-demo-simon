@@ -12,8 +12,8 @@ export async function POST(req) {
       });
     }
 
-    if (!process.env.SCRAPINGDOG_API_KEY) {
-      return new Response(JSON.stringify({ error: "ScrapingDog API key not configured" }), {
+    if (!process.env.APIFY_API_KEY) {
+      return new Response(JSON.stringify({ error: "Apify API key not configured" }), {
         status: 500,
         headers: { "Content-Type": "application/json" },
       });
@@ -26,61 +26,47 @@ export async function POST(req) {
       });
     }
 
-    // STEP 2 — Scrape with ScrapingDog (general scraper → extract og:description)
-    const scrapeRes = await fetch(
-      `https://api.scrapingdog.com/scrape?api_key=${process.env.SCRAPINGDOG_API_KEY}&url=${encodeURIComponent(url)}&dynamic=true`
+    // STEP 2 — Scrape with Apify Instagram Post Scraper
+    // Start a run of the Instagram Post Scraper actor
+    const runRes = await fetch(
+      `https://api.apify.com/v2/acts/apify~instagram-post-scraper/run-sync-get-dataset-items?token=${process.env.APIFY_API_KEY}&timeout=50&memory=256`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          directUrls: [url],
+          resultsLimit: 1,
+        }),
+      }
     );
 
-    if (!scrapeRes.ok) {
-      throw new Error(`ScrapingDog request failed with status: ${scrapeRes.status}`);
+    if (!runRes.ok) {
+      const errText = await runRes.text();
+      throw new Error(`Apify request failed (${runRes.status}): ${errText.slice(0, 200)}`);
     }
 
-    const html = await scrapeRes.text();
-    console.log("HTML length:", html.length, "| Preview:", html.slice(0, 300));
+    const results = await runRes.json();
+    console.log("Apify result:", JSON.stringify(results).slice(0, 500));
 
-    // Instagram embeds the caption in og:description
-    const ogDescMatch =
-      html.match(/<meta[^>]+property=["']og:description["'][^>]+content=["']([^"']+)["']/i) ||
-      html.match(/<meta[^>]+content=["']([^"']+)["'][^>]+property=["']og:description["']/i);
+    const post = Array.isArray(results) ? results[0] : results;
 
-    let caption = "";
-    if (ogDescMatch && ogDescMatch[1]) {
-      const raw = ogDescMatch[1]
-        .replace(/&#039;/g, "'")
-        .replace(/&quot;/g, '"')
-        .replace(/&amp;/g, "&")
-        .replace(/&lt;/g, "<")
-        .replace(/&gt;/g, ">");
-
-      // og:description format: "N likes, N comments - Username: Caption here"
-      const colonMatch = raw.match(/:\s*[""]?(.+)/s);
-      caption = colonMatch ? colonMatch[1].replace(/[""]$/, "").trim() : raw.trim();
-    }
-
-    // Fallback: try JSON-LD
-    if (!caption) {
-      const jsonLdMatch = html.match(/<script[^>]+type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/i);
-      if (jsonLdMatch) {
-        try {
-          const jsonLd = JSON.parse(jsonLdMatch[1]);
-          caption = jsonLd?.description || jsonLd?.caption || "";
-        } catch {}
-      }
-    }
-
-    // Extract likes/comments counts from the og:description text
-    const rawDesc = ogDescMatch?.[1] || "";
-    const likesMatch = rawDesc.match(/(\d[\d,]*)\s*likes?/i);
-    const commentsMatch = rawDesc.match(/(\d[\d,]*)\s*comments?/i);
-    const likes = likesMatch ? parseInt(likesMatch[1].replace(/,/g, "")) : 0;
-    const comments = commentsMatch ? parseInt(commentsMatch[1].replace(/,/g, "")) : 0;
-
-    if (!caption) {
-      // Return a debug snippet so we can see what Instagram served
-      const debugHtml = html.slice(0, 2000);
+    if (!post) {
       return new Response(JSON.stringify({
-        error: "Could not extract caption. Make sure the post is public and the URL is a direct Instagram post link (/p/, /reel/).",
-        debug_html_preview: debugHtml,
+        error: "Could not fetch post data. Make sure the URL is a public Instagram post.",
+      }), {
+        status: 400,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+
+    const caption = post.caption || post.text || post.description || "";
+    const likes = post.likesCount || post.likes || 0;
+    const comments = post.commentsCount || post.comments || 0;
+
+    if (!caption) {
+      return new Response(JSON.stringify({
+        error: "Post found but caption is empty. The post may have no text caption.",
+        debug: JSON.stringify(post).slice(0, 500),
       }), {
         status: 400,
         headers: { "Content-Type": "application/json" },
