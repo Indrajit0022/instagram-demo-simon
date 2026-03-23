@@ -1,0 +1,86 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  *, *::before, *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+
+  body {
+    background-color: #080808;
+    color: #FFFFFF;
+    font-family: var(--font-dm), system-ui, sans-serif;
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+    scrollbar-width: thin;
+    scrollbar-color: #2A2A2A #111111;
+  }
+
+  /* Custom Webkit scrollbar */
+  ::-webkit-scrollbar {
+    width: 3px;
+    height: 3px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: #111111;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: #2A2A2A;
+    border-radius: 99px;
+  }
+
+  ::selection {
+    background: white;
+    color: #080808;
+  }
+
+  .instrument-serif {
+    font-family: var(--font-instrument), serif;
+  }
+}
+
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-spin-custom {
+  animation: spin 1s linear infinite;
+}
+
+.fade-up {
+  animation: fadeUp 0.4s ease both;
+}
+
+.fade-up-1 {
+  animation: fadeUp 0.4s 0.05s ease both;
+}
+
+.fade-up-2 {
+  animation: fadeUp 0.4s 0.10s ease both;
+}
+
+.fade-up-3 {
+  animation: fadeUp 0.4s 0.15s ease both;
+}
+
+.fade-up-4 {
+  animation: fadeUp 0.4s 0.20s ease both;
+}
