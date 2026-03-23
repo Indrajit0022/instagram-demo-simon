@@ -27,30 +27,36 @@ export async function POST(req) {
     }
 
     // STEP 2 — Scrape with ScrapingDog
+    // Extract ID from Instagram URL (shortcode)
+    // Works for /p/, /reels/, /tv/
+    const idMatch = url.match(/(?:\/p\/|\/reels\/|\/tv\/)([^\/?#&]+)/);
+    const postId = idMatch ? idMatch[1] : url;
+
     const scrapeRes = await fetch(
-      `https://api.scrapingdog.com/instagram?api_key=${process.env.SCRAPINGDOG_API_KEY}&url=${encodeURIComponent(url)}&type=post`
+      `https://api.scrapingdog.com/profile/post?api_key=${process.env.SCRAPINGDOG_API_KEY}&id=${postId}`
     );
     const scrapeData = await scrapeRes.json();
 
-    // Log for debugging (will show in Vercel logs)
+    // Log for debugging
     console.log("Scrape Data:", JSON.stringify(scrapeData).slice(0, 500));
 
-    // Handle different response structures
+    // Handle the new response structure
     const postData = Array.isArray(scrapeData) ? scrapeData[0] : scrapeData;
     
+    // Attempt multiple paths for the caption
     const caption = postData?.edge_media_to_caption?.edges[0]?.node?.text || 
                     postData?.caption?.text || 
                     postData?.caption || 
+                    postData?.text ||
                     postData?.accessibility_caption || 
                     "";
     
-    const likes = postData?.edge_media_preview_like?.count || postData?.like_count || 0;
-    const comments = postData?.edge_media_to_parent_comment?.count || postData?.comment_count || 0;
+    const likes = postData?.edge_media_preview_like?.count || postData?.like_count || postData?.likes || 0;
+    const comments = postData?.edge_media_to_parent_comment?.count || postData?.comment_count || postData?.comments || 0;
 
     if (!caption) {
-      // If we have an error message from the API, show it
       const apiError = scrapeData?.error || scrapeData?.message || "";
-      const errorMsg = apiError ? `API Error: ${apiError}` : "Could not extract caption. Make sure the post is public and the URL is correct.";
+      const errorMsg = apiError ? `API Error: ${apiError}` : "Could not extract caption. Make sure the post is public and the ID is correct.";
       
       return new Response(JSON.stringify({ error: errorMsg }), {
         status: 400,
