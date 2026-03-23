@@ -32,12 +32,27 @@ export async function POST(req) {
     );
     const scrapeData = await scrapeRes.json();
 
-    const caption = scrapeData[0]?.edge_media_to_caption?.edges[0]?.node?.text || "";
-    const likes = scrapeData[0]?.edge_media_preview_like?.count || 0;
-    const comments = scrapeData[0]?.edge_media_to_parent_comment?.count || 0;
+    // Log for debugging (will show in Vercel logs)
+    console.log("Scrape Data:", JSON.stringify(scrapeData).slice(0, 500));
+
+    // Handle different response structures
+    const postData = Array.isArray(scrapeData) ? scrapeData[0] : scrapeData;
+    
+    const caption = postData?.edge_media_to_caption?.edges[0]?.node?.text || 
+                    postData?.caption?.text || 
+                    postData?.caption || 
+                    postData?.accessibility_caption || 
+                    "";
+    
+    const likes = postData?.edge_media_preview_like?.count || postData?.like_count || 0;
+    const comments = postData?.edge_media_to_parent_comment?.count || postData?.comment_count || 0;
 
     if (!caption) {
-      return new Response(JSON.stringify({ error: "Could not extract caption. Make sure the post is public." }), {
+      // If we have an error message from the API, show it
+      const apiError = scrapeData?.error || scrapeData?.message || "";
+      const errorMsg = apiError ? `API Error: ${apiError}` : "Could not extract caption. Make sure the post is public and the URL is correct.";
+      
+      return new Response(JSON.stringify({ error: errorMsg }), {
         status: 400,
         headers: { "Content-Type": "application/json" },
       });
