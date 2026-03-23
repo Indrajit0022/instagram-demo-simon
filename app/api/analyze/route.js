@@ -81,7 +81,7 @@ export async function POST(req) {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "google/gemini-flash-1.5",
+        model: "google/gemini-2.0-flash-001",
         response_format: { type: "json_object" },
         messages: [
           { role: "system", content: "You are a social media content strategist. Return only valid JSON." },
@@ -107,7 +107,7 @@ export async function POST(req) {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "google/gemini-flash-1.5",
+        model: "google/gemini-2.0-flash-001",
         response_format: { type: "json_object" },
         messages: [
           { role: "system", content: "You are a social media content strategist. Return only valid JSON." },
